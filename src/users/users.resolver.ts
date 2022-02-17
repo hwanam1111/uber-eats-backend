@@ -9,6 +9,7 @@ import {
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email-dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -20,34 +21,21 @@ export class UsersResolver {
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
-    try {
-      const result = await this.usersService.createAccount(createAccountInput);
-      return result;
-    } catch (err) {
-      return {
-        ok: false,
-        error: err,
-      };
-    }
+    const result = await this.usersService.createAccount(createAccountInput);
+    return result;
   }
 
   @Mutation(() => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
-    try {
-      const result = await this.usersService.login(loginInput);
-      return result;
-    } catch (err) {
-      return {
-        ok: false,
-        error: err,
-      };
-    }
+    const result = await this.usersService.login(loginInput);
+    return result;
   }
 
   @Query(() => User)
   @UseGuards(AuthGuard)
   me(@AuthUser() authUser: User): User {
-    return authUser;
+    const result = authUser;
+    return result;
   }
 
   @Query(() => UserProfileOutput)
@@ -55,23 +43,8 @@ export class UsersResolver {
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.usersService.findUser(userProfileInput.userId);
-
-      if (!user) {
-        throw Error();
-      }
-
-      return {
-        ok: true,
-        user,
-      };
-    } catch (err) {
-      return {
-        ok: false,
-        error: 'User Not Found',
-      };
-    }
+    const result = await this.usersService.findUser(userProfileInput.userId);
+    return result;
   }
 
   @Mutation(() => EditProfileOutput)
@@ -84,7 +57,14 @@ export class UsersResolver {
       authUser.id,
       editProfileInput,
     );
+    return result;
+  }
 
+  @Mutation(() => VerifyEmailOutput)
+  async verifyEmail(
+    @Args('input') verifyEmailInput: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
+    const result = await this.usersService.verifyEmail(verifyEmailInput.code);
     return result;
   }
 }

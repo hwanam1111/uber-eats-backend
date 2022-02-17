@@ -27,7 +27,7 @@ export class User extends CoreEntity {
   @IsEmail()
   email: string;
 
-  @Column()
+  @Column({ select: false })
   @Field(() => String)
   password: string;
 
@@ -39,14 +39,20 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field(() => Boolean)
+  verified: boolean;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassowrd(): Promise<void> {
-    try {
-      this.password = await bcrypt.hash(this.password, 11);
-    } catch (err) {
-      console.log(err);
-      throw new InternalServerErrorException();
+    if (this.password) {
+      try {
+        this.password = await bcrypt.hash(this.password, 11);
+      } catch (err) {
+        console.log(err);
+        throw new InternalServerErrorException();
+      }
     }
   }
 

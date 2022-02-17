@@ -6,12 +6,17 @@ import { User } from './entities/user.entity';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import { JwtService } from 'src/jwt/jwt.service';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
+import { VerifyEmailOutput } from './dtos/verify-email-dto';
+import { UserProfileOutput } from './dtos/user-profile.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -29,7 +34,14 @@ export class UsersService {
         };
       }
 
-      await this.users.save(this.users.create({ email, password, role }));
+      const createdUser = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      await this.verifications.save(
+        this.verifications.create({
+          user: createdUser,
+        }),
+      );
 
       return { ok: true };
     } catch (err) {
@@ -42,7 +54,10 @@ export class UsersService {
 
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      );
       if (!user) {
         return {
           ok: false,
@@ -57,7 +72,6 @@ export class UsersService {
           error: 'Wrong password',
         };
       }
-
       const token = this.jwtService.sign(user.id);
 
       return {
@@ -67,13 +81,32 @@ export class UsersService {
     } catch (err) {
       return {
         ok: false,
-        token: null,
+        error: err,
       };
     }
   }
 
-  async findUser(id: number): Promise<User> {
-    return this.users.findOne({ id });
+  async findUser(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ id });
+
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User Not Found',
+        };
+      }
+
+      return {
+        ok: true,
+        user,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err,
+      };
+    }
   }
 
   async editProfile(
@@ -84,6 +117,12 @@ export class UsersService {
       const user = await this.users.findOne(userId);
       if (email) {
         user.email = email;
+        user.verified = false;
+        await this.verifications.save(
+          this.verifications.create({
+            user,
+          }),
+        );
       }
       if (password) {
         user.password = password;
@@ -93,6 +132,34 @@ export class UsersService {
 
       return {
         ok: true,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err,
+      };
+    }
+  }
+
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    try {
+      const verification = await this.verifications.findOne(
+        { code },
+        { relations: ['user'] },
+      );
+
+      if (verification) {
+        verification.user.verified = true;
+        await this.users.save(verification.user);
+
+        return {
+          ok: true,
+        };
+      }
+
+      return {
+        ok: false,
+        error: 'Verification Not Found',
       };
     } catch (err) {
       return {

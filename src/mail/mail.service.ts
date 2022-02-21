@@ -15,7 +15,7 @@ export class MailService {
     subject: string,
     template: string,
     mailVars?: MailVar[],
-  ) {
+  ): Promise<boolean> {
     const { apiKey, domainName } = this.options;
     const form = new FormData();
     form.append('from', `우버이츠 클론코딩 <mailgun@${domainName}>`);
@@ -27,8 +27,7 @@ export class MailService {
     );
 
     try {
-      await got(`https://api.mailgun.net/v3/${domainName}/messages`, {
-        method: 'POST',
+      await got.post(`https://api.mailgun.net/v3/${domainName}/messages`, {
         headers: {
           Authorization: `Basic ${Buffer.from(`api:${apiKey}`).toString(
             'base64',
@@ -36,8 +35,11 @@ export class MailService {
         },
         body: form,
       });
+
+      return true;
     } catch (err) {
       console.log(err);
+      return false;
     }
   }
 

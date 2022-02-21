@@ -7,11 +7,11 @@ import { UsersService } from './users.service';
 import { MailService } from 'src/mail/mail.service';
 import { Repository } from 'typeorm';
 
-const mockRepository = {
+const mockRepository = () => ({
   findOne: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
-};
+});
 
 const mockJwtService = {
   sign: jest.fn(),
@@ -27,6 +27,8 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 describe('User Service', () => {
   let service: UsersService;
   let usersRepository: MockRepository<User>;
+  let verificationRepository: MockRepository<Verification>;
+  let mailService: MailService;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -34,11 +36,11 @@ describe('User Service', () => {
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockRepository,
+          useValue: mockRepository(),
         },
         {
           provide: getRepositoryToken(Verification),
-          useValue: mockRepository,
+          useValue: mockRepository(),
         },
         {
           provide: JwtService,
@@ -52,7 +54,9 @@ describe('User Service', () => {
     }).compile();
 
     service = module.get(UsersService);
-    usersRepository = module.get(getRepositoryToken(Verification));
+    mailService = module.get(MailService);
+    usersRepository = module.get(getRepositoryToken(User));
+    verificationRepository = module.get(getRepositoryToken(Verification));
   });
 
   it('should be defined', () => {
@@ -65,10 +69,11 @@ describe('User Service', () => {
       password: '1234asdf',
       role: 0,
     };
+
     it('should fail if user exists', async () => {
       usersRepository.findOne.mockResolvedValue({
         id: 1,
-        email: 'test@jun.com',
+        email: '',
       });
       const result = await service.createAccount(createAccountArgs);
 
@@ -78,15 +83,56 @@ describe('User Service', () => {
       });
     });
 
-    // it('should create a new user', async () => {
-    //   usersRepository.findOne.mockResolvedValue(undefined);
-    //   await service.createAccount(createAccountArgs);
-    //   expect(usersRepository.create).toHaveBeenCalledTimes(1);
-    // });
-  });
+    it('should create a new user', async () => {
+      usersRepository.findOne.mockResolvedValue(undefined);
+      usersRepository.create.mockReturnValue(createAccountArgs);
+      usersRepository.save.mockResolvedValue(createAccountArgs);
+      verificationRepository.create.mockReturnValue({
+        user: createAccountArgs,
+      });
+      verificationRepository.save.mockResolvedValue({
+        code: 'code',
+      });
 
-  it.todo('login');
-  it.todo('findUser');
-  it.todo('editProfile');
-  it.todo('verifyEmail');
+      const result = await service.createAccount(createAccountArgs);
+
+      expect(usersRepository.create).toHaveBeenCalledTimes(1);
+      expect(usersRepository.create).toHaveBeenCalledWith(createAccountArgs);
+      expect(usersRepository.save).toHaveBeenCalledTimes(1);
+      expect(usersRepository.save).toHaveBeenCalledWith(createAccountArgs);
+
+      expect(verificationRepository.create).toHaveBeenCalledTimes(1);
+      expect(verificationRepository.create).toHaveBeenCalledWith({
+        user: createAccountArgs,
+      });
+      expect(verificationRepository.save).toHaveBeenCalledTimes(1);
+      expect(verificationRepository.save).toHaveBeenCalledWith({
+        user: createAccountArgs,
+      });
+
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledTimes(1);
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+      );
+
+      expect(result).toMatchObject({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      usersRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.createAccount(createAccountArgs);
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'Could not create account',
+      });
+    });
+
+    it.todo('login');
+    it.todo('findUser');
+    it.todo('editProfile');
+    it.todo('verifyEmail');
+  });
 });

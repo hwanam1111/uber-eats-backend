@@ -281,6 +281,34 @@ describe('UserModule (e2e)', () => {
     });
   });
 
+  describe('editProfile', () => {
+    it('should change email', () => {
+      const NEW_EMAIL = 'chagne@email.com';
+
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+            mutation {
+              editProfile(input: {
+                email: "${NEW_EMAIL}"
+              }) {
+                ok
+                error
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error } = res.body.data.editProfile;
+
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+        });
+    });
+  });
+
   it.todo('verifyEmail');
-  it.todo('editProfile');
 });

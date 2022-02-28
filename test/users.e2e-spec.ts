@@ -5,6 +5,7 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { getConnection, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { Verification } from 'src/users/entities/verification.entity';
 
 jest.mock('got', () => {
   return {
@@ -21,6 +22,7 @@ const TEST_USER = {
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
+  let verificationRepository: Repository<Verification>;
   let jwtToken: string;
 
   beforeAll(async () => {
@@ -30,6 +32,9 @@ describe('UserModule (e2e)', () => {
 
     app = module.createNestApplication();
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    verificationRepository = module.get<Repository<Verification>>(
+      getRepositoryToken(Verification),
+    );
     await app.init();
   });
 
@@ -310,5 +315,60 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('verifyEmail');
+  describe('verifyEmail', () => {
+    let code: string;
+
+    beforeAll(async () => {
+      const [verification] = await verificationRepository.find();
+      code = verification.code;
+    });
+
+    it('should fail on verification code not found', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+            mutation {
+              verifyEmail(input: { 
+                code: "uncorrect-code"
+              }) {
+                ok
+                error
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error } = res.body.data.verifyEmail;
+
+          expect(ok).toBeFalsy();
+          expect(error).toBe('Verification Not Found');
+        });
+    });
+
+    it('should verify email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+            mutation {
+              verifyEmail(input: { 
+                code: "${code}"
+              }) {
+                ok
+                error
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error } = res.body.data.verifyEmail;
+
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+        });
+    });
+  });
 });

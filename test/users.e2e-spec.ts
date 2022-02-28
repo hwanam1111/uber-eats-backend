@@ -1,8 +1,10 @@
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 jest.mock('got', () => {
   return {
@@ -11,9 +13,15 @@ jest.mock('got', () => {
 });
 
 const GRAPHQL_ENDPOINT = '/graphql';
+const TEST_USER = {
+  email: 'dev_email@naver.com',
+  password: 'testpassword1',
+};
 
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
+  let userRepository: Repository<User>;
+  let jwtToken: string;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,6 +29,7 @@ describe('UserModule (e2e)', () => {
     }).compile();
 
     app = module.createNestApplication();
+    userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     await app.init();
   });
 
@@ -30,16 +39,14 @@ describe('UserModule (e2e)', () => {
   });
 
   describe('createAccount', () => {
-    const EMAIL = 'dev_email@naver.com';
-
     it('should create account', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
         .send({
           query: `mutation {
             createAccount(input: {
-              email: "${EMAIL}",
-              password: "testpassword1",
+              email: "${TEST_USER.email}",
+              password: "${TEST_USER.password}",
               role: Client
             }) {
               ok
@@ -61,8 +68,8 @@ describe('UserModule (e2e)', () => {
         .send({
           query: `mutation {
             createAccount(input: {
-              email: "${EMAIL}",
-              password: "testpassword1",
+              email: "${TEST_USER.email}",
+              password: "${TEST_USER.password}",
               role: Client
             }) {
               ok
@@ -79,8 +86,156 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('userProfile');
-  it.todo('login');
+  describe('login', () => {
+    it('should login with correct credentials', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+            mutation {
+              login(input: { 
+                email: "${TEST_USER.email}", 
+                password: "${TEST_USER.password}"
+              }) {
+                error
+                ok
+                token
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error, token } = res.body.data.login;
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+          expect(token).toEqual(expect.any(String));
+
+          jwtToken = token;
+        });
+    });
+
+    it('should not be able to login with wrong credentials', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+            mutation {
+              login(input: { 
+                email: "email@test.com", 
+                password: "password"
+              }) {
+                error
+                ok
+                token
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error, token } = res.body.data.login;
+          expect(ok).toBeFalsy();
+          expect(error).toBe('User not found');
+          expect(token).toBeNull();
+        });
+    });
+  });
+
+  describe('userProfile', () => {
+    let userId: number;
+
+    beforeAll(async () => {
+      const [user] = await userRepository.find();
+      userId = user.id;
+    });
+
+    it("should see a user's profile", () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+            query {
+              userProfile(userId: ${userId}) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            ok,
+            error,
+            user: { id },
+          } = res.body.data.userProfile;
+
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+          expect(id).toBe(userId);
+        });
+    });
+
+    it('should not find a profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+            query {
+              userProfile(userId: 1000) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { ok, error, user } = res.body.data.userProfile;
+
+          expect(ok).toBeFalsy();
+          expect(error).toBe('User Not Found');
+          expect(user).toBeNull();
+        });
+    });
+
+    it('should fail if not verify jwt token', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', '')
+        .send({
+          query: `
+            query {
+              userProfile(userId: ${userId}) {
+                ok
+                error
+                user {
+                  id
+                }
+              }
+            }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const { statusCode, message } =
+            res.body.errors[0].extensions.response;
+
+          expect(statusCode).toBe(403);
+          expect(message).toBe('Forbidden resource');
+        });
+    });
+  });
+
   it.todo('me');
   it.todo('verifyEmail');
   it.todo('editProfile');

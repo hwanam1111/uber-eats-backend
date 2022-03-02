@@ -6,10 +6,10 @@ import {
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 
 @InputType()
-export class ReataurantsInput extends PagenationInput {}
+export class RestaurantsInput extends PagenationInput {}
 
 @ObjectType()
-export class ReataurantsOutput extends PagenationOutput {
+export class RestaurantsOutput extends PagenationOutput {
   @Field(() => [Restaurant], { nullable: true })
   results?: Restaurant[];
 }

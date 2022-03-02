@@ -1,3 +1,4 @@
+import { UserRole } from 'src/users/entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -70,7 +71,7 @@ describe('User Service', () => {
     const createAccountArgs = {
       email: 'test@ubereatsclone.com',
       password: '1234asdf',
-      role: 0,
+      role: UserRole.Client,
     };
 
     it('should fail if user exists', async () => {

@@ -62,7 +62,6 @@ export class RestaurantService {
       const restaurant = await this.restaurants.findOne({
         where: {
           id: editRestaurantInput.restaurantId,
-          isDeleted: false,
         },
         loadRelationIds: true,
       });
@@ -116,7 +115,6 @@ export class RestaurantService {
       const restaurant = await this.restaurants.findOne({
         where: {
           id: restaurantId,
-          isDeleted: false,
         },
         loadRelationIds: true,
       });
@@ -135,12 +133,7 @@ export class RestaurantService {
         };
       }
 
-      this.restaurants.save([
-        {
-          id: restaurantId,
-          isDeleted: true,
-        },
-      ]);
+      await this.restaurants.softDelete(restaurantId);
 
       return {
         ok: true,
@@ -175,7 +168,6 @@ export class RestaurantService {
       return await this.restaurants.count({
         where: {
           category,
-          isDeleted: false,
         },
       });
     } catch (err) {

@@ -28,6 +28,10 @@ import { AllCategoriesOutput } from './dtos/all-categories-dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
+import {
+  SearchRestaurantsInput,
+  SearchRestaurantsOutput,
+} from './dtos/search-reataurant.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -115,6 +119,16 @@ export class CategoryResolver {
   ): Promise<RestaurantOutput> {
     const result = await this.restaurantService.findRestaurantById(
       restaurantInput,
+    );
+    return result;
+  }
+
+  @Query(() => SearchRestaurantsOutput)
+  async searchRestaurants(
+    @Args('input') searchRestaurantsInput: SearchRestaurantsInput,
+  ): Promise<SearchRestaurantsOutput> {
+    const result = await this.restaurantService.searchRestaurants(
+      searchRestaurantsInput,
     );
     return result;
   }

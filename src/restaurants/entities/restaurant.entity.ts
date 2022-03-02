@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsString, Length } from 'class-validator';
-import { CoreEntity } from 'src/common/entities/common.entity';
+import { IncludeSoftDeleteCoreEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import { Category } from './category.entity';
@@ -8,7 +8,7 @@ import { Category } from './category.entity';
 @InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
-export class Restaurant extends CoreEntity {
+export class Restaurant extends IncludeSoftDeleteCoreEntity {
   @Field(() => String)
   @Column()
   @IsString()

@@ -12,6 +12,10 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dtos/delete-restaurant.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -39,6 +43,19 @@ export class RestaurantResolver {
     const result = await this.restaurantService.editRestaurant(
       authUser,
       editRestaurantInput,
+    );
+    return result;
+  }
+
+  @Mutation(() => DeleteRestaurantOutput)
+  @Role(['Owner'])
+  async deleteRestaurant(
+    @AuthUser() authUser: User,
+    @Args('input') deleteRestaurantInput: DeleteRestaurantInput,
+  ): Promise<DeleteRestaurantOutput> {
+    const result = await this.restaurantService.deleteRestaurant(
+      authUser,
+      deleteRestaurantInput,
     );
     return result;
   }

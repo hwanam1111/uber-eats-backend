@@ -1,5 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { IsBoolean } from 'class-validator';
 import {
+  Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
@@ -20,4 +22,18 @@ export class CoreEntity {
   @UpdateDateColumn()
   @Field(() => Date)
   updatedAt: Date;
+}
+
+@ObjectType()
+@Entity()
+export class IncludeSoftDeleteCoreEntity extends CoreEntity {
+  @Field(() => Boolean)
+  @Column({ default: false })
+  @IsBoolean()
+  isDeleted: boolean;
+
+  @Field(() => Date)
+  @Column({ nullable: true })
+  @IsBoolean()
+  deletedAt: Date;
 }

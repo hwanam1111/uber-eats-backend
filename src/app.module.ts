@@ -66,6 +66,7 @@ import { Category } from './restaurants/entities/category.entity';
     UsersModule,
     AuthModule,
     MailModule,
+    AuthModule,
     RestaurantsModule,
   ],
   controllers: [],

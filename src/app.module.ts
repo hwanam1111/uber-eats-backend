@@ -19,6 +19,7 @@ import { MailModule } from './mail/mail.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './restaurants/entities/category.entity';
+import { Menu } from 'src/restaurants/entities/menu.entity';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { Category } from './restaurants/entities/category.entity';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_EVT !== 'prod',
       logging: process.env.NODE_EVT === 'dev',
-      entities: [User, Verification, Restaurant, Category],
+      entities: [User, Verification, Restaurant, Category, Menu],
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,

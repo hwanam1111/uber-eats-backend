@@ -2,8 +2,9 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsString, Length } from 'class-validator';
 import { IncludeSoftDeleteCoreEntity } from 'src/common/entities/common.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
 import { Category } from './category.entity';
+import { Menu } from './menu.entity';
 
 @InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
@@ -38,4 +39,8 @@ export class Restaurant extends IncludeSoftDeleteCoreEntity {
 
   @RelationId((resturant: Restaurant) => resturant.owner)
   ownerId: number;
+
+  @Field(() => [Menu])
+  @OneToMany(() => Menu, (menu) => menu.restaurant)
+  menu: Menu[];
 }

@@ -4,6 +4,22 @@ import { CoreEntity } from 'src/common/entities/common.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import { Restaurant } from './restaurant.entity';
 
+@InputType('MenuOptionInputType', { isAbstract: true })
+@ObjectType()
+class MenuOption {
+  @Field(() => String)
+  @IsString()
+  name: string;
+
+  @Field(() => [String])
+  @IsString()
+  choice: string[];
+
+  @Field(() => Number)
+  @IsNumber()
+  extra: number;
+}
+
 @InputType('MenuInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
@@ -38,4 +54,8 @@ export class Menu extends CoreEntity {
 
   @RelationId((menu: Menu) => menu.restaurant)
   restaurantId: number;
+
+  @Field(() => [MenuOption])
+  @Column({ type: 'json' })
+  options: MenuOption[];
 }

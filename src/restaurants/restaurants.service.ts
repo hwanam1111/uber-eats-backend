@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { ILike, Repository } from 'typeorm';
-import { AllCategoriesOutput } from './dtos/all-categories-dto';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import { CreateMenuInput, CreateMenuOutput } from './dtos/create-menu.dto';
 import {

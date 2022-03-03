@@ -7,7 +7,7 @@ import {
   RestaurantResolver,
 } from './restaurants.resolver';
 import { Restaurant } from './entities/restaurant.entity';
-import { RestaurantService } from './restaurant.service';
+import { RestaurantService } from './restaurants.service';
 import { CategoryRepository } from './repositories/category.repository';
 import { Menu } from './entities/menu.entity';
 

@@ -14,7 +14,7 @@ import {
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
 import { Restaurant } from './entities/restaurant.entity';
-import { RestaurantService } from './restaurant.service';
+import { RestaurantService } from './restaurants.service';
 import {
   EditRestaurantInput,
   EditRestaurantOutput,
@@ -24,7 +24,7 @@ import {
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
 import { Category } from './entities/category.entity';
-import { AllCategoriesOutput } from './dtos/all-categories-dto';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';

@@ -11,13 +11,13 @@ class MenuOption {
   @IsString()
   name: string;
 
-  @Field(() => [String])
+  @Field(() => [String], { nullable: true })
   @IsString()
-  choice: string[];
+  choices?: string[];
 
-  @Field(() => Number)
+  @Field(() => Number, { nullable: true })
   @IsNumber()
-  extra: number;
+  extra?: number;
 }
 
 @InputType('MenuInputType', { isAbstract: true })
@@ -31,14 +31,14 @@ export class Menu extends CoreEntity {
   name: string;
 
   @Field(() => Number)
-  @Column()
+  @Column({ nullable: true })
   @IsNumber()
   price: number;
 
   @Field(() => String)
-  @Column()
+  @Column({ nullable: true })
   @IsString()
-  photo: string;
+  photo?: string;
 
   @Field(() => String)
   @Column()
@@ -49,6 +49,7 @@ export class Menu extends CoreEntity {
   @Field(() => Restaurant)
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.menu, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
   restaurant: Restaurant;
 
@@ -56,6 +57,6 @@ export class Menu extends CoreEntity {
   restaurantId: number;
 
   @Field(() => [MenuOption])
-  @Column({ type: 'json' })
-  options: MenuOption[];
+  @Column({ type: 'json', nullable: true })
+  options?: MenuOption[];
 }

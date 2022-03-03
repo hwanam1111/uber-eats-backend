@@ -32,6 +32,8 @@ import {
   SearchRestaurantsInput,
   SearchRestaurantsOutput,
 } from './dtos/search-reataurant.dto';
+import { Menu } from './entities/menu.entity';
+import { CreateMenuInput, CreateMenuOutput } from './dtos/create-menu.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -129,6 +131,24 @@ export class CategoryResolver {
   ): Promise<SearchRestaurantsOutput> {
     const result = await this.restaurantService.searchRestaurants(
       searchRestaurantsInput,
+    );
+    return result;
+  }
+}
+
+@Resolver(() => Menu)
+@Role(['Owner'])
+export class MenuResolver {
+  constructor(private readonly restaurantService: RestaurantService) {}
+
+  @Mutation(() => CreateMenuOutput)
+  async createMenu(
+    @AuthUser() authUser: User,
+    @Args('input') createMenuInput: CreateMenuInput,
+  ): Promise<CreateMenuOutput> {
+    const result = await this.restaurantService.createMenu(
+      authUser,
+      createMenuInput,
     );
     return result;
   }

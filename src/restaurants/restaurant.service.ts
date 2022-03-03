@@ -4,6 +4,7 @@ import { User } from 'src/users/entities/user.entity';
 import { ILike, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories-dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import { CreateMenuInput, CreateMenuOutput } from './dtos/create-menu.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -23,6 +24,7 @@ import {
   SearchRestaurantsOutput,
 } from './dtos/search-reataurant.dto';
 import { Category } from './entities/category.entity';
+import { Menu } from './entities/menu.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import { CategoryRepository } from './repositories/category.repository';
 
@@ -31,6 +33,8 @@ export class RestaurantService {
   constructor(
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
+    @InjectRepository(Menu)
+    private readonly menu: Repository<Menu>,
     private readonly categories: CategoryRepository,
   ) {}
 
@@ -259,7 +263,9 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne(restaurantId);
+      const restaurant = await this.restaurants.findOne(restaurantId, {
+        relations: ['menu'],
+      });
 
       if (!restaurant) {
         return {
@@ -309,6 +315,45 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not search load restaurants',
+      };
+    }
+  }
+
+  async createMenu(
+    owner: User,
+    createMenuInput: CreateMenuInput,
+  ): Promise<CreateMenuOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(
+        createMenuInput.restaurantId,
+      );
+
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You can not create a restaurant menu that you do not owner',
+        };
+      }
+
+      await this.menu.save(
+        this.menu.create({ ...createMenuInput, restaurant }),
+      );
+
+      return {
+        ok: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        ok: false,
+        error: 'Could not create menu',
       };
     }
   }

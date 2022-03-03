@@ -34,6 +34,8 @@ import {
 } from './dtos/search-reataurant.dto';
 import { Menu } from './entities/menu.entity';
 import { CreateMenuInput, CreateMenuOutput } from './dtos/create-menu.dto';
+import { DeleteMenuInput, DeleteMenuOutput } from './dtos/delete-menu.dto';
+import { EditMenuInput, EditMenuOutput } from './dtos/edit-menu.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -137,11 +139,11 @@ export class CategoryResolver {
 }
 
 @Resolver(() => Menu)
-@Role(['Owner'])
 export class MenuResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @Mutation(() => CreateMenuOutput)
+  @Role(['Owner'])
   async createMenu(
     @AuthUser() authUser: User,
     @Args('input') createMenuInput: CreateMenuInput,
@@ -149,6 +151,32 @@ export class MenuResolver {
     const result = await this.restaurantService.createMenu(
       authUser,
       createMenuInput,
+    );
+    return result;
+  }
+
+  @Mutation(() => EditMenuOutput)
+  @Role(['Owner'])
+  async editMenu(
+    @AuthUser() authUser: User,
+    @Args('input') editMenuInput: EditMenuInput,
+  ): Promise<EditMenuOutput> {
+    const result = await this.restaurantService.editMenu(
+      authUser,
+      editMenuInput,
+    );
+    return result;
+  }
+
+  @Mutation(() => DeleteMenuOutput)
+  @Role(['Owner'])
+  async deleteMenu(
+    @AuthUser() authUser: User,
+    @Args('input') deleteMenuInput: DeleteMenuInput,
+  ): Promise<DeleteMenuOutput> {
+    const result = await this.restaurantService.deleteMenu(
+      authUser,
+      deleteMenuInput,
     );
     return result;
   }

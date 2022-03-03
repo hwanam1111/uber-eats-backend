@@ -4,6 +4,17 @@ import { CoreEntity } from 'src/common/entities/common.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import { Restaurant } from './restaurant.entity';
 
+@InputType('MenuOptionChoiceInputType', { isAbstract: true })
+@ObjectType()
+class MenuOptionChoice {
+  @Field(() => String)
+  name: string;
+
+  @Field(() => Number, { defaultValue: 0 })
+  @IsNumber()
+  extra?: number;
+}
+
 @InputType('MenuOptionInputType', { isAbstract: true })
 @ObjectType()
 class MenuOption {
@@ -11,13 +22,9 @@ class MenuOption {
   @IsString()
   name: string;
 
-  @Field(() => [String], { nullable: true })
+  @Field(() => [MenuOptionChoice], { nullable: true })
   @IsString()
-  choices?: string[];
-
-  @Field(() => Number, { nullable: true })
-  @IsNumber()
-  extra?: number;
+  choices?: MenuOptionChoice[];
 }
 
 @InputType('MenuInputType', { isAbstract: true })
@@ -35,9 +42,8 @@ export class Menu extends CoreEntity {
   @IsNumber()
   price: number;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @Column({ nullable: true })
-  @IsString()
   photo?: string;
 
   @Field(() => String)
@@ -56,7 +62,7 @@ export class Menu extends CoreEntity {
   @RelationId((menu: Menu) => menu.restaurant)
   restaurantId: number;
 
-  @Field(() => [MenuOption])
+  @Field(() => [MenuOption], { nullable: true })
   @Column({ type: 'json', nullable: true })
   options?: MenuOption[];
 }

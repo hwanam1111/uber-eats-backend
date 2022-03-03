@@ -9,10 +9,12 @@ import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
+import { DeleteMenuInput, DeleteMenuOutput } from './dtos/delete-menu.dto';
 import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
+import { EditMenuInput, EditMenuOutput } from './dtos/edit-menu.dto';
 import {
   EditRestaurantInput,
   EditRestaurantOutput,
@@ -354,6 +356,85 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not create menu',
+      };
+    }
+  }
+
+  async editMenu(
+    owner: User,
+    editMenuInput: EditMenuInput,
+  ): Promise<EditMenuOutput> {
+    try {
+      const menu = await this.menu.findOne(editMenuInput.menuId, {
+        relations: ['restaurant'],
+      });
+
+      if (!menu) {
+        return {
+          ok: false,
+          error: 'Restaurant menu not found',
+        };
+      }
+
+      if (owner.id !== menu.restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You can not edit a restaurant menu that you do not owner',
+        };
+      }
+
+      await this.menu.save([
+        {
+          id: editMenuInput.menuId,
+          ...editMenuInput,
+        },
+      ]);
+
+      return {
+        ok: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        ok: false,
+        error: 'Could not delete menu',
+      };
+    }
+  }
+
+  async deleteMenu(
+    owner: User,
+    deleteMenuInput: DeleteMenuInput,
+  ): Promise<DeleteMenuOutput> {
+    try {
+      const menu = await this.menu.findOne(deleteMenuInput.menuId, {
+        relations: ['restaurant'],
+      });
+
+      if (!menu) {
+        return {
+          ok: false,
+          error: 'Restaurant menu not found',
+        };
+      }
+
+      if (owner.id !== menu.restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You can not delete a restaurant menu that you do not owner',
+        };
+      }
+
+      await this.menu.delete({ id: deleteMenuInput.menuId });
+
+      return {
+        ok: true,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        ok: false,
+        error: 'Could not delete menu',
       };
     }
   }

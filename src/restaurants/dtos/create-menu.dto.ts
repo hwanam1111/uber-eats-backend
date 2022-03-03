@@ -6,8 +6,8 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 export class CreateMenuInput extends PickType(Menu, [
   'name',
   'price',
+  'photo',
   'description',
-  // 'photo',
   'options',
 ]) {
   @Field(() => Number)

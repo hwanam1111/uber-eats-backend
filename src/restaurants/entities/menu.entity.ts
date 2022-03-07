@@ -6,7 +6,7 @@ import { Restaurant } from './restaurant.entity';
 
 @InputType('MenuOptionChoiceInputType', { isAbstract: true })
 @ObjectType()
-class MenuOptionChoice {
+export class MenuOptionChoice {
   @Field(() => String)
   name: string;
 
@@ -17,7 +17,7 @@ class MenuOptionChoice {
 
 @InputType('MenuOptionInputType', { isAbstract: true })
 @ObjectType()
-class MenuOption {
+export class MenuOption {
   @Field(() => String)
   @IsString()
   name: string;
@@ -25,6 +25,10 @@ class MenuOption {
   @Field(() => [MenuOptionChoice], { nullable: true })
   @IsString()
   choices?: MenuOptionChoice[];
+
+  @Field(() => Number, { defaultValue: 0 })
+  @IsNumber()
+  extra?: number;
 }
 
 @InputType('MenuInputType', { isAbstract: true })

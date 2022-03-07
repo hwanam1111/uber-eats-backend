@@ -1,5 +1,6 @@
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -8,6 +9,8 @@ import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';
 import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
+
+const pubsub = new PubSub();
 
 @Resolver(() => Order)
 export class OrderResolver {

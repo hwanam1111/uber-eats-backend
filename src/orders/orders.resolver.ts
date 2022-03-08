@@ -10,7 +10,7 @@ import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';
 import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
 import { Inject } from '@nestjs/common';
-import { PUB_SUB } from 'src/common/common.constants';
+import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
 
 @Resolver(() => Order)
 export class OrderResolver {
@@ -62,24 +62,16 @@ export class OrderResolver {
     return result;
   }
 
-  @Mutation(() => Boolean)
-  async potatoReady(@Args('potatoId') potatoId: number) {
-    await this.pubSub.publish('hotPotatos', {
-      readyPotato: potatoId,
-    });
-    return true;
-  }
-
-  @Subscription(() => String, {
-    filter: ({ readyPotato }, { potatoId }) => {
-      return readyPotato === potatoId;
+  @Subscription(() => Order, {
+    filter: (payload, _, context) => {
+      return context.user.id === payload.pendingOrders.ownerId;
     },
-    resolve: ({ readyPotato }) => {
-      return `Your patato with the id ${readyPotato} is ready!`;
+    resolve: (payload) => {
+      return payload.pendingOrders;
     },
   })
-  @Role(['Any'])
-  readyPotato(@Args('potatoId') potatoId: number) {
-    return this.pubSub.asyncIterator('hotPotatos');
+  @Role(['Owner'])
+  pendingOrders() {
+    return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
   }
 }

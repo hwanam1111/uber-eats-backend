@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
 
 import { UsersModule } from './users/users.module';
@@ -84,6 +85,7 @@ import { Payment } from './payments/entities/payment.entity';
       domainName: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
+    ScheduleModule.forRoot(),
     CommonModule,
     UsersModule,
     AuthModule,

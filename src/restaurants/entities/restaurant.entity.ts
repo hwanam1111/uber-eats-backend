@@ -48,4 +48,12 @@ export class Restaurant extends IncludeSoftDeleteCoreEntity {
   @Field(() => [Order])
   @OneToMany(() => Order, (order) => order.restaurant)
   orders: Order[];
+
+  @Field(() => Boolean, { defaultValue: false })
+  @Column({ default: false })
+  isPromoted: boolean;
+
+  @Field(() => Date)
+  @Column({ nullable: true })
+  promotedUntil?: Date;
 }

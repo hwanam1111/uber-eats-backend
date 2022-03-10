@@ -212,7 +212,7 @@ export class RestaurantService {
         take: limit,
         skip: (page - 1) * limit,
         order: {
-          id: 'DESC',
+          isPromoted: 'DESC',
         },
       });
 
@@ -242,7 +242,7 @@ export class RestaurantService {
         take: limit,
         skip: (page - 1) * limit,
         order: {
-          id: 'DESC',
+          isPromoted: 'DESC',
         },
       });
 

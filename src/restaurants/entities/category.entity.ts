@@ -14,10 +14,10 @@ export class Category extends CoreEntity {
   @Length(1)
   name: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   @Column({ nullable: true })
   @IsString()
-  coverImg: string;
+  coverImg?: string;
 
   @Field(() => String)
   @Column({ unique: true })

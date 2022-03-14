@@ -244,7 +244,10 @@ export class RestaurantService {
         order: {
           isPromoted: 'DESC',
         },
+        relations: ['category'],
       });
+
+      console.log(results);
 
       return {
         ok: true,

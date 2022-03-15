@@ -307,6 +307,7 @@ export class RestaurantService {
         order: {
           id: 'DESC',
         },
+        relations: ['category'],
       });
 
       return {

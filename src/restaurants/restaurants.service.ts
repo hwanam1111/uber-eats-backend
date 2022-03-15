@@ -205,7 +205,7 @@ export class RestaurantService {
         };
       }
 
-      const restaurants = await this.restaurants.find({
+      const [results, totalResults] = await this.restaurants.findAndCount({
         where: {
           category,
         },
@@ -214,15 +214,15 @@ export class RestaurantService {
         order: {
           isPromoted: 'DESC',
         },
+        relations: ['category'],
       });
-
-      const totalResults = await this.countRestaurant(category);
 
       return {
         ok: true,
         totalPages: Math.ceil(totalResults / limit),
+        totalResults,
         category,
-        restaurants,
+        restaurants: results,
       };
     } catch (err) {
       console.log(err);

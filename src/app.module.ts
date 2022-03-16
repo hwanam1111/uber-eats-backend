@@ -21,6 +21,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { CommonModule } from './common/common.module';
 import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -40,6 +41,9 @@ import { Payment } from './payments/entities/payment.entity';
         MAILGUN_API_KEY: Joi.string().required(),
         MAILGUN_DOMAIN_NAME: Joi.string().required(),
         MAILGUN_FROM_EMAIL: Joi.string().required(),
+        AWS_S3_ACCESS_KEY: Joi.string().required(),
+        AWS_S3_SECRET_ACCESS_KEY: Joi.string().required(),
+        AWS_S3_BUCKET_NAME: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot({
@@ -94,6 +98,7 @@ import { Payment } from './payments/entities/payment.entity';
     RestaurantsModule,
     OrdersModule,
     PaymentsModule,
+    UploadsModule,
   ],
   controllers: [],
   providers: [],

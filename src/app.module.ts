@@ -27,8 +27,7 @@ import { UploadsModule } from './uploads/uploads.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
-      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+      envFilePath: `.env.${process.env.NODE_ENV}`,
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(),
         HOST_URL: Joi.string().required(),
@@ -48,6 +47,7 @@ import { UploadsModule } from './uploads/uploads.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      playground: process.env.NODE_ENV !== 'prod',
       subscriptions: {
         'subscriptions-transport-ws': {
           onConnect: (connectionParams: { 'x-jwt': string }) => ({

@@ -37,6 +37,10 @@ import { CreateMenuInput, CreateMenuOutput } from './dtos/create-menu.dto';
 import { DeleteMenuInput, DeleteMenuOutput } from './dtos/delete-menu.dto';
 import { EditMenuInput, EditMenuOutput } from './dtos/edit-menu.dto';
 import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
+import {
+  MyRestaurantOutput,
+  MyRestuarantInput,
+} from './dtos/my-restaurant.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -186,6 +190,19 @@ export class MenuResolver {
   @Role(['Owner'])
   myRestaurants(@AuthUser() owner: User): Promise<MyRestaurantsOutput> {
     const result = this.restaurantService.myRestaurants(owner);
+    return result;
+  }
+
+  @Query(() => MyRestaurantOutput)
+  @Role(['Owner'])
+  myRestaurant(
+    @AuthUser() owner: User,
+    @Args('input') myRestuarantInput: MyRestuarantInput,
+  ): Promise<MyRestaurantOutput> {
+    const result = this.restaurantService.myRestaurant(
+      myRestuarantInput,
+      owner,
+    );
     return result;
   }
 }
